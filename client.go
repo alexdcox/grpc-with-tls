@@ -27,7 +27,13 @@ func client() {
 		logrus.Fatalf("failed to add to cert pool\n")
 	}
 
+	clientCert, err := tls.LoadX509KeyPair("certs/dcrctl-client.cert", "certs/dcrctl-client.key")
+	if err != nil {
+	    logrus.Fatalf("%+v\n", errors.WithStack(err))
+	}
+
 	config := &tls.Config{
+		Certificates: []tls.Certificate{clientCert},
 		RootCAs:      certPool,
 	}
 

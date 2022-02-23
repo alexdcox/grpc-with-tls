@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"time"
@@ -30,12 +32,23 @@ func server() {
 
 	serverCert, err := tls.LoadX509KeyPair("certs/dcrwallet-rpc.cert", "certs/dcrwallet-rpc.key")
 	if err != nil {
-	    logrus.Fatalf("%+v\n", errors.WithStack(err))
+		logrus.Fatalf("%+v\n", errors.WithStack(err))
+	}
+
+	pemClientCA, err := ioutil.ReadFile("certs/dcrwallet-clients.pem")
+	if err != nil {
+		logrus.Fatalf("%+v\n", errors.WithStack(err))
+	}
+
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(pemClientCA) {
+		logrus.Fatalf("failed to load certificate pool blah blah yada yada")
 	}
 
 	config := &tls.Config{
 		Certificates: []tls.Certificate{serverCert},
-		ClientAuth:   tls.NoClientCert,
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		ClientCAs:    certPool,
 	}
 
 	tlsCredentials := credentials.NewTLS(config)
@@ -51,7 +64,7 @@ func server() {
 
 	err = grpcServer.Serve(lis)
 	if err != nil {
-	    logrus.Fatalf("%+v\n", errors.WithStack(err))
+		logrus.Fatalf("%+v\n", errors.WithStack(err))
 	}
 
 	fmt.Println("Done")
