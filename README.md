@@ -1,7 +1,7 @@
 
 # GRPC With TLS
 
-Created to test Decred certificates with grpc server/client config. Am I doing things right? I presume not because I can't get it to work...
+Created to test Decred certificates with grpc server/client config.
 
 ## Running
 ### Server
